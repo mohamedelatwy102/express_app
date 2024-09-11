@@ -15,15 +15,22 @@ let getAllBlogs = async(req,res)=> {
     // let total_Document = await Blog.find({}).countDocuments()
     // let total_pages = Math.ceil(total_Document / limit)
     // res.json({message : "getAllBlogs",data,total_Document,total_pages})
-    let blogwithComments = []
-    let alldata = await Blog.find({}).cursor()
-    for(let doc  = await alldata.next(); doc != null ;  doc = await alldata.next()) {
-        // console.log(doc._doc)
-        let comments =  await Comments.find({blogId : doc._doc._id })
-        let obj = {...doc._doc,comments}
-        blogwithComments.push(obj)
-    }
-    res.json({message : "getAll" , blogwithComments})
+    // let blogwithComments = []
+    // let alldata = await Blog.find({}).cursor()
+    // for(let doc  = await alldata.next(); doc != null ;  doc = await alldata.next()) {
+    //     // console.log(doc._doc)
+    //     let comments =  await Comments.find({blogId : doc._doc._id })
+    //     let obj = {...doc._doc,comments}
+    //     blogwithComments.push(obj)
+    // }
+    let data = await Blog.find({}).populate("userId").populate({
+        path : "comments",
+        populate : {
+            path : "userId",
+            model : "user"
+        }
+    })
+    res.json({message : "getAll data",data })
     
 
 }
