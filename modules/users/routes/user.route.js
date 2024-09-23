@@ -1,5 +1,5 @@
 const app = require("express").Router()
-const {getAllUser,addUser,deleteUser,updateUser,login,verifyUser} = require("../controller/user.controller")
+const {getAllUser,addUser,deleteUser,updateUser,login,verifyUser,verfiyUserGoogle,sendForgetPasswordLink} = require("../controller/user.controller")
 let authorization = require("../../../isAuthorized/authorization")
 let {GET_ALL_USER}=require("../endpoints")
 let validator = require("../../../validation/common.validator")
@@ -10,5 +10,7 @@ app.put("/updateUser/:id",updateUser)
 app.delete("/deleteUser/:id",deleteUser)
 app.post("/login",validator(loginSchema),login)
 app.get("/verifyUser",verifyUser)
+app.post("/verfiyUserGoogle",verfiyUserGoogle)
+app.post("/sendforgetpasswordlink",sendForgetPasswordLink)
 
 module.exports = app

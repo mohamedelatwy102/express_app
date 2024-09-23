@@ -3,10 +3,10 @@ let {StatusCodes, getReasonPhrase} = require("http-status-codes")
 let bcrypt = require("bcrypt")
 var jwt = require('jsonwebtoken');
 const nodemailer = require("nodemailer")
-
+var generator = require('generate-password');
+var password = generator.generate({length: 10,numbers: true});
 
 let getAllUser = async(req,res)=> {
-    
         let data = await User.find({}).select("-password")
          res.status(StatusCodes.OK).json({message : "getAllUser",data})
 }
@@ -55,8 +55,14 @@ let addUser = async(req,res)=>{
         to: `${email}`, // list of receivers
         subject: "Hello ✔", // Subject line
         text: "Hello world?", // plain text body
-        html: `to confirm this email <a href='http://localhost:8000/verifyUser?token=${token}'> click here</a>`, // html body
+        html: `to confirm this email <a href='https://express-app-sepia.vercel.app/verifyUser?token=${token}'> click here</a>`, // html body
+        // attachments: [{
+        //     filename: 'Invoice.pdf',
+        //     path: 'invoice.pdf',
+        //     contentType: 'application/pdf'
+        //   }],
       });
+      res.send("add User")
 }
 
 let updateUser = async(req,res)=>{
@@ -111,12 +117,76 @@ let verifyUser = async(req,res) => {
     }
 }
 
+let verfiyUserGoogle = async(req,res)=> {
+    console.log(req.body);
+    let {verified_email, id,email,name,} = req.body
+    console.log(verified_email);
+    if (verified_email) {
+        let user = await User.findOne({googleID : id})
+        if (user) {
+            //we have an account 
+            res.send("log In")
+        }else {
+            let newuser = new User({
+                userName: name,
+                email: email,
+                password : password,
+                role : "user",
+                isAuth : verified_email,
+                googleID : id
+            })
+            await newuser.save()
+            var token = jwt.sign({email : email , googleID : id , isAuth :  verified_email}, 'shhhhh');
+
+            res.json({message : "saved",token})
+        }
+
+    }
+    
+    
+//     let access_token = req.body.access_token
+//     const oAuth2Client = await getAuthenticatedClient();
+//     const url = `https://www.googleapis.com/oauth2/v1/userinfo?access_token=${access_token}`;
+//     const res = await oAuth2Client.request({url});
+//   console.log(res.data);
+    
+}
+let sendForgetPasswordLink = async(req,res)=> {
+    let {email} = req.body
+    let user = await User.findOne({email : email})
+    if (!user) {
+        res.json({message : "user Not Found"})
+    } else {
+        var token = jwt.sign({email : email }, 'shhhhh');
+        const transporter = nodemailer.createTransport({
+            service : "gmail",
+            auth: {
+              user: "mohamedelatwy@std.mans.edu.eg",
+              pass: "qopf aksl cumz iaha",
+            },
+          });
+          await transporter.sendMail({
+            from: '"Elatwy Company " <mohamedelatwy@std.mans.edu.eg>', // sender address
+            to: `${email}`, // list of receivers
+            subject: "Hello ✔", // Subject line
+            text: "Hello world?", // plain text body
+            html: `</div>click <a href='http://localhost:3000/resetpassword'?token=${token}'>  here</a>to reset password</div>`, // html body
+          });
+        
+
+    }
+    
+    res.send("hello")
+}
+
 module.exports = {
     getAllUser ,
     addUser,
     updateUser,
     deleteUser,
     login,
-    verifyUser
+    verifyUser,
+    verfiyUserGoogle,
+    sendForgetPasswordLink
 }
 

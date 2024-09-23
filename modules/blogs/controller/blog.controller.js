@@ -23,14 +23,22 @@ let getAllBlogs = async(req,res)=> {
     //     let obj = {...doc._doc,comments}
     //     blogwithComments.push(obj)
     // }
-    let data = await Blog.find({}).populate("userId").populate({
-        path : "comments",
-        populate : {
-            path : "userId",
-            model : "user"
-        }
-    })
-    res.json({message : "getAll data",data })
+    // let data = await Blog.find({}).populate("userId").populate({
+    //     path : "comments",
+    //     populate : {
+    //         path : "userId",
+    //         model : "user"
+    //     }
+    // })
+    let newBlogComm = []
+    let cursor =  Blog.find({}).cursor()
+    for (let doc = await cursor.next(); doc != null ; doc = await cursor.next()) {
+        let commentsArr = await Comments.find({blogId : doc._doc._id}).populate("userId")
+        let obj = {...doc._doc,commentsArr}
+        newBlogComm.push(obj)
+    }
+    
+    res.json({message : "getAll data",newBlogComm})
     
 
 }

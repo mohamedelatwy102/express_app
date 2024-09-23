@@ -8,6 +8,7 @@ let userSchema = new mongoose.Schema({
     
     role : {type : String , required : true},
     isAuth : {type : Boolean , default : false},
+    googleID : String
 })
 
 userSchema.pre("save", async function(next) {
